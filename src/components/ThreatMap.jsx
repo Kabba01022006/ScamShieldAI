@@ -40,8 +40,8 @@ export const ThreatMap = () => {
     },
     {
       id: 'in-jam',
-      city: 'Jamtara & Deoghar',
-      state: 'Jharkhand',
+      city: 'Ludhiana',
+      state: 'Punjab',
       coords: { x: 335, y: 240 },
       severity: 'Critical',
       incidents: 785,
