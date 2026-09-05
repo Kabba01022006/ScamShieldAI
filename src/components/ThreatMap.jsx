@@ -39,7 +39,7 @@ export const ThreatMap = () => {
       searchQuery: 'digital arrest'
     },
     {
-      id: 'in-jam',
+      id: 'in-ldh',
       city: 'Ludhiana',
       state: 'Punjab',
       coords: { x: 335, y: 240 },
