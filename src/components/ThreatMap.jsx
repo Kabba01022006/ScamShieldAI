@@ -42,20 +42,6 @@ const HOTSPOTS = [
     query: 'visa'
   },
   {
-    id: 'in-jam',
-    city: 'Jamtara & Deoghar',
-    state: 'Jharkhand',
-    coords: { x: 325, y: 235 },
-    severity: 'Critical',
-    incidents: 785,
-    topScam: 'Electricity Bill Disconnection SMS & APK Phishing',
-    avgLoss: '₹45,000',
-    vector: 'OTP & APK Smishing',
-    description: 'Bulk SMS campaigns claim home electricity will be disconnected at 9:30 PM. Callers trick victims into installing screen-sharing tools (AnyDesk) or fake payment APKs, draining bank balances.',
-    safetyRule: 'Power utility boards never send disconnection threats from personal 10-digit mobile numbers.',
-    query: 'electricity'
-  },
-  {
     id: 'in-mum',
     city: 'Mumbai & Pune',
     state: 'Maharashtra',
