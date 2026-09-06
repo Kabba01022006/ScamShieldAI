@@ -18,7 +18,6 @@ export const initialScams = [
       "Instructions to transfer money into 'temporary government audit accounts'"
     ],
     preventionTip: "There is NO legal concept of 'Digital Arrest' under Indian law. Genuine police or CBI officers NEVER question suspects or issue bail over Skype or WhatsApp video calls. Dial 1930 immediately.",
-    proofImage: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=800&auto=format&fit=crop&q=60"
   },
   {
     id: "scam-in-02",
@@ -39,7 +38,7 @@ export const initialScams = [
       "Requiring workers to deposit their own money into unknown accounts to 'unlock' earnings"
     ],
     preventionTip: "Legitimate companies will never recruit via unsolicited WhatsApp texts or ask you to pay money to receive wages for liking videos or posting reviews.",
-    proofImage: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-in-03",
@@ -60,7 +59,7 @@ export const initialScams = [
       "Funds transferred to individual mule savings accounts rather than registered broker clearing accounts"
     ],
     preventionTip: "Only invest through brokers registered with SEBI. Verify broker registration numbers on the official SEBI portal (sebi.gov.in) before depositing any money.",
-    proofImage: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-101",
@@ -81,7 +80,7 @@ export const initialScams = [
       "Sent from a random toll-free VOIP number"
     ],
     preventionTip: "Never click package tracking links in unsolicited SMS. Always go directly to USPS.com or your carrier's official app to track packages.",
-    proofImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-102",
@@ -102,7 +101,7 @@ export const initialScams = [
       "Insisting you must not hang up or call back directly"
     ],
     preventionTip: "Banks will NEVER call and ask for your two-factor authentication code or password. Hang up immediately and dial the number printed on the back of your debit/credit card.",
-    proofImage: "https://images.unsplash.com/photo-1534536281715-e28d76689b4d?w=800&auto=format&fit=crop&q=60"
+    
   },
   {
     id: "scam-103",
@@ -123,7 +122,7 @@ export const initialScams = [
       "Invoice for services never requested or purchased"
     ],
     preventionTip: "Check your official account orders page on Amazon.com directly. Legitimate companies never instruct you to install remote desktop software to issue a refund.",
-    proofImage: "https://images.unsplash.com/photo-1557200134-90327ee9fafa?w=800&auto=format&fit=crop&q=60"
+  
   },
   {
     id: "scam-104",
@@ -144,7 +143,7 @@ export const initialScams = [
       "Smart contract requires unlimited token spending approval"
     ],
     preventionTip: "Guaranteed high returns in cryptocurrency are always scams. Use tool like revoke.cash to inspect approvals and never invest in unknown Web3 domains.",
-    proofImage: "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-105",
@@ -164,7 +163,7 @@ export const initialScams = [
       "Requiring the influencer to pay any out-of-pocket 'handling' or 'shipping' fee"
     ],
     preventionTip: "Legitimate brand ambassadors are never asked to pay for product shipping. If you have to pay money to get 'free' items, you are the customer, not the ambassador.",
-    proofImage: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=60"
+    
   },
   {
     id: "scam-106",
@@ -184,7 +183,7 @@ export const initialScams = [
       "Asks for repetitive personal information not normally needed for parking"
     ],
     preventionTip: "Feel the surface of the parking meter — if the QR code is a sticker pasted over the sign, do not scan it. Download and use the official city parking app from the App Store.",
-    proofImage: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-107",
@@ -204,7 +203,7 @@ export const initialScams = [
       "Shortened or unverified web domain not ending in .gov"
     ],
     preventionTip: "Toll authorities do not send text messages with payment links without prior opt-in account registration. Check your state toll account directly on the verified state website.",
-    proofImage: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-108",
@@ -224,7 +223,7 @@ export const initialScams = [
       "Interviews conducted on messaging apps like Telegram, WhatsApp, or Signal"
     ],
     preventionTip: "Legitimate employers never send checks to employees to buy gear from specific wire/Zelle vendors. They ship company-managed hardware directly to your address.",
-    proofImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&auto=format&fit=crop&q=60"
+   
   },
   {
     id: "scam-109",
@@ -245,7 +244,7 @@ export const initialScams = [
       "Aggressive and coercive verbal tactics"
     ],
     preventionTip: "The IRS always initiates contact by regular mail delivered by the USPS. The IRS never threatens immediate arrest or demands gift cards/cryptocurrency.",
-    proofImage: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=60"
+    
   },
   {
     id: "scam-110",
@@ -266,7 +265,7 @@ export const initialScams = [
       "No transaction record appears inside your official banking app"
     ],
     preventionTip: "Zelle does not require sellers to pay to 'upgrade' their personal account to receive payments. Always verify transactions in your real bank app, not by checking incoming emails.",
-    proofImage: "https://images.unsplash.com/photo-1556742049-0a67e5572293?w=800&auto=format&fit=crop&q=60"
+  
   },
   {
     id: "scam-111",
@@ -286,7 +285,7 @@ export const initialScams = [
       "Asks for credit card details without requiring you to authenticate with 2FA first"
     ],
     preventionTip: "Never click billing links from streaming emails. Open your browser, type netflix.com directly, and check your Account settings.",
-    proofImage: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&auto=format&fit=crop&q=60"
+ 
   },
   {
     id: "scam-112",
@@ -306,7 +305,7 @@ export const initialScams = [
       "Unforeseen airport shipping/crate insurance charges demanded after initial payment"
     ],
     preventionTip: "Never buy pets online without seeing them in person or via live video call with the breeder. Use reputable adoption agencies or local rescue shelters.",
-    proofImage: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=800&auto=format&fit=crop&q=60"
+  
   },
   {
     id: "scam-113",
@@ -326,7 +325,7 @@ export const initialScams = [
       "Check amount is far higher than any reasonable mystery shopping compensation"
     ],
     preventionTip: "Cashier's checks can take weeks to fully clear even if your bank makes funds temporarily available. Any job asking you to wire funds is fraudulent.",
-    proofImage: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&auto=format&fit=crop&q=60"
+    
   },
   {
     id: "scam-114",
@@ -346,6 +345,6 @@ export const initialScams = [
       "High urgency and immediate demand for bank transfer or peer-to-peer cash"
     ],
     preventionTip: "Always contact the family member on their original number or reach out to friends/relatives to verify identity before transferring any funds.",
-    proofImage: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&auto=format&fit=crop&q=60"
+  
   }
 ];
