@@ -21,7 +21,7 @@ export const initialScams = [
     proofImage: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=800&auto=format&fit=crop&q=60"
   },
   {
-    id: "scam-in-04",
+    id: "scam-in-02",
     title: "Bengaluru Telegram YouTube Like & Subscribe Job Scam",
     scamType: "SMS",
     identifier: "+91 91082-37194",
@@ -42,7 +42,7 @@ export const initialScams = [
     proofImage: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=60"
   },
   {
-    id: "scam-in-05",
+    id: "scam-in-03",
     title: "Mumbai WhatsApp Institutional Stock Trading & IPO Scam",
     scamType: "Website",
     identifier: "+91 98201-84729",
