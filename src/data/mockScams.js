@@ -21,48 +21,6 @@ export const initialScams = [
     proofImage: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=800&auto=format&fit=crop&q=60"
   },
   {
-    id: "scam-in-02",
-    title: "Jamtara Discom Electricity Disconnection SMS & APK Phish",
-    scamType: "SMS",
-    identifier: "+91 74881-93021",
-    secondaryIdentifier: "Discom-BillPay-Helper.apk",
-    threatLevel: "Critical",
-    incidentDate: "2025-02-20",
-    reportedBy: "Ananya M. (Ranchi)",
-    meTooCount: 118,
-    summary: "Urgent SMS claiming power will be cut off at 9:30 PM due to unpaid electricity bill, instructing to call a phone number and install an APK.",
-    description: "Received an SMS at 6:45 PM: 'Dear consumer your electricity power will be disconnected tonight at 9:30 PM from electricity office because your previous month bill was not updated. Please immediately contact our officer at 7488193021. Thank you.' When I called out of panic, the person claiming to be a Discom officer asked me to download 'Discom-BillPay-Helper.apk' from WhatsApp to pay a ₹10 recharge. The app gave them full remote access to my phone, reading my OTP and debiting ₹45,000.",
-    redFlags: [
-      "SMS sent from an ordinary 10-digit personal mobile number instead of official Discom SMS header",
-      "Panic-inducing deadline threatening power cut in 2 hours",
-      "Requesting installation of an APK file or AnyDesk / TeamViewer",
-      "Demanding a token ₹10 payment through a third-party link"
-    ],
-    preventionTip: "Electricity distribution companies never send disconnection notices via personal mobile numbers. Always pay bills through official state electricity utility portals or verified consumer apps.",
-    proofImage: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=60"
-  },
-  {
-    id: "scam-in-03",
-    title: "Mewat OLX Fake Army Officer Bike Sale & Reverse QR Scam",
-    scamType: "Social Media",
-    identifier: "+91 82950-14920",
-    secondaryIdentifier: "UPI: army.officer.transfer@upi",
-    threatLevel: "Critical",
-    incidentDate: "2025-02-16",
-    reportedBy: "Vikram R. (Jaipur)",
-    meTooCount: 96,
-    summary: "Counterfeit Army officer on OLX selling Royal Enfield bike, sending a QR code claiming 'scan to receive advance token payment'.",
-    description: "Found a 2022 Royal Enfield Classic listed on OLX for just ₹65,000. The seller sent photos in Indian Army uniform and an Army Canteen ID card, claiming he was posted to Leh military camp and needed to sell his bike urgently. He promised to ship the bike through military transport. To pay me a ₹5,000 advance transport deposit, he sent a QR code on WhatsApp saying 'Scan this QR in your Google Pay to receive ₹5,000'. As soon as I scanned it and entered my UPI PIN, ₹5,000 was debited from my account instead.",
-    redFlags: [
-      "Seller poses as an Indian Army or paramilitary officer with low-quality photo of military ID",
-      "Vehicle price is unrealistically below market rate",
-      "Claims vehicle is in military cargo or requires advance transport clearance fee",
-      "Sends a QR code and claims scanning it will 'credit' money to your bank"
-    ],
-    preventionTip: "NEVER scan a QR code or enter your UPI PIN to receive money. UPI PIN is exclusively used for authorizing outbound payments from your account.",
-    proofImage: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&auto=format&fit=crop&q=60"
-  },
-  {
     id: "scam-in-04",
     title: "Bengaluru Telegram YouTube Like & Subscribe Job Scam",
     scamType: "SMS",
