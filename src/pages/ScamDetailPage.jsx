@@ -263,28 +263,6 @@ export const ScamDetailPage = () => {
           </div>
         )}
 
-        {/* Evidence / Screenshot Proof Preview */}
-        {scam.proofImage && (
-          <div className="space-y-3">
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-              Attached Visual Evidence Artifact
-            </h2>
-            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 max-h-96 bg-slate-950 flex items-center justify-center shadow-md">
-              <img
-                src={scam.proofImage}
-                alt={`Proof screenshot for ${scam.title}`}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-            {scam.proofFileName && (
-              <p className="text-[11px] text-slate-500 font-mono">
-                Artifact identifier: <span className="text-slate-700 dark:text-slate-300">{scam.proofFileName}</span>
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Footer actions */}
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <Link
