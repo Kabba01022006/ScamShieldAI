@@ -16,7 +16,7 @@ export const ThreatMapPage = () => {
           India Scam Threat & Hotspot Radar
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-          Interactive geospatial surveillance mapping active cybercrime epicenters across India, including Jamtara OTP networks, Delhi NCR Digital Arrest rings, and Mewat QR fraud syndicates.
+          Interactive geospatial surveillance mapping active cybercrime epicenters across India, including Jamtara OTP networks, Delhi NCR Digital Arrest rings, and Ludhiana immigration visa fraud syndicates.
         </p>
       </div>
 
