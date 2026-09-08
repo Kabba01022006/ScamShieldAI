@@ -19,6 +19,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { AiAnalyzerPage } from './pages/AiAnalyzerPage';
 import { ThreatMapPage } from './pages/ThreatMapPage';
 
+// ScamShield AI v2.5 - Production Build Trigger
 // Scroll to top on route change
 function ScrollToTop() {
   const { pathname, search } = useLocation();
