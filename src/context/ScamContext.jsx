@@ -3,7 +3,7 @@ import { initialScams } from '../data/mockScams';
 
 const ScamContext = createContext();
 
-const STORAGE_KEY = 'scamshield_reports';
+const STORAGE_KEY = 'scamshield_reports_v2';
 const VOTES_KEY = 'scamshield_user_voted';
 
 export const ScamProvider = ({ children }) => {
