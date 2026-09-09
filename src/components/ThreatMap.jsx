@@ -318,7 +318,7 @@ export const ThreatMap = () => {
                       fill={isSelected ? pinColor : '#0f172a'}
                       stroke={pinColor}
                       strokeWidth={isSelected ? 2.5 : 1.5}
-                      className="transition-all duration-200 group-hover:scale-125"
+                      className="transition-all duration-200"
                     />
 
                     {/* Center Dot */}
