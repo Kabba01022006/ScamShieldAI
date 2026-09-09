@@ -306,7 +306,7 @@ export const ThreatMap = () => {
                         r={isSelected ? 16 : 10}
                         fill={pinColor}
                         opacity={isSelected ? 0.4 : 0.2}
-                        className="animate-ping"
+                        className=""
                       />
                     )}
 
