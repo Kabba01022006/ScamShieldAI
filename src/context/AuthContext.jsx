@@ -1,21 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+// This is a SIMULATED auth system — there is no real backend or password
+// checking here. We just remember "who is logged in" using localStorage so
+// it survives a page refresh. Good enough for a frontend-only demo.
 
+const AuthContext = createContext();
 const STORAGE_KEY = 'scamshield_user';
 
 export const AuthProvider = ({ children }) => {
+  // On first load, try to restore a previously "logged in" user from
+  // localStorage. If nothing is saved, currentUser starts as null.
   const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
   });
 
+  // A short-lived message shown after login/signup/logout (e.g. "Welcome back!")
   const [authNotification, setAuthNotification] = useState(null);
 
+  // Whenever currentUser changes, keep localStorage in sync.
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
@@ -24,30 +27,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  const login = (userData) => {
-    // Simulated login: accept email, assign name or fallback
-    const user = {
-      name: userData.name || userData.email.split('@')[0],
-      email: userData.email,
-      joinedDate: new Date().toISOString().split('T')[0],
-      role: 'Community Defender'
-    };
+  // Shared by login/signup: builds the fake user object and shows a message.
+  const setUserAndNotify = (user, message, duration = 5000) => {
     setCurrentUser(user);
-    setAuthNotification(`Welcome back, ${user.name}!`);
-    setTimeout(() => setAuthNotification(null), 5000);
+    setAuthNotification(message);
+    setTimeout(() => setAuthNotification(null), duration);
+  };
+
+  const login = ({ name, email }) => {
+    const user = {
+      name: name || email.split('@')[0], // fallback: use part before @ as name
+      email,
+      joinedDate: new Date().toISOString().split('T')[0],
+      role: 'Community Defender',
+    };
+    setUserAndNotify(user, `Welcome back, ${user.name}!`);
     return user;
   };
 
-  const signup = (userData) => {
+  const signup = ({ name, email }) => {
     const user = {
-      name: userData.name,
-      email: userData.email,
+      name,
+      email,
       joinedDate: new Date().toISOString().split('T')[0],
-      role: 'Community Defender'
+      role: 'Community Defender',
     };
-    setCurrentUser(user);
-    setAuthNotification(`Account created! Welcome to ScamShieldAI, ${user.name}.`);
-    setTimeout(() => setAuthNotification(null), 5000);
+    setUserAndNotify(user, `Account created! Welcome to ScamShieldAI, ${user.name}.`);
     return user;
   };
 
@@ -66,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         authNotification,
-        clearNotification: () => setAuthNotification(null)
+        clearNotification: () => setAuthNotification(null),
       }}
     >
       {children}
@@ -74,6 +79,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// Shortcut hook: components call useAuth() instead of useContext(AuthContext)
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
