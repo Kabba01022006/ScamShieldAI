@@ -1,35 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const ThemeContext = createContext();
+// Controls light/dark mode for the whole site and remembers the user's choice.
 
+const ThemeContext = createContext();
 const THEME_KEY = 'scamshield_theme';
 
 export const ThemeProvider = ({ children }) => {
+  // Restore saved theme on load; default to 'light' if nothing is saved.
   const [theme, setTheme] = useState(() => {
-    try {
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === 'dark' || saved === 'light') return saved;
-    } catch {
-      // ignore
-    }
-    // Default to 'light' for high-contrast crisp white theme as requested by user
-    return 'light';
+    const saved = localStorage.getItem(THEME_KEY);
+    return saved === 'dark' ? 'dark' : 'light';
   });
 
+  // Whenever theme changes: (1) toggle the "dark" class on <html>, which is
+  // what makes Tailwind's `dark:` classes activate across the whole app,
+  // and (2) save the choice so it persists after a refresh.
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    }
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch {
-      // ignore
-    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   const toggleTheme = () => {
