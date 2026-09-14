@@ -48,7 +48,7 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors shadow-sm">
+    <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
@@ -79,10 +79,10 @@ export const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 flex items-center gap-1.5 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 flex items-center gap-1.5 ${
                     active
                       ? 'text-slate-950 bg-slate-100 border border-slate-200/90 dark:text-white dark:bg-slate-800 dark:border-slate-700'
-                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60'
+                      : 'text-slate-600 border-transparent hover:text-slate-950 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60'
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${active ? 'text-slate-950 dark:text-white' : 'text-slate-400'}`} />
@@ -113,7 +113,7 @@ export const Navbar = () => {
             {/* High Contrast Report Threat Button */}
             <Link
               to="/report"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-slate-900/10 active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-xs sm:text-sm shadow-md shadow-slate-900/10 active:scale-[0.98] transition-colors"
             >
               <PlusCircle className="w-4 h-4 stroke-[2.5]" />
               <span>Report Threat</span>
@@ -245,3 +245,4 @@ export const Navbar = () => {
     </header>
   );
 };
+
