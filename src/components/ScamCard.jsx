@@ -13,9 +13,6 @@ import {
   Users,
 } from 'lucide-react';
 
-// Moved OUTSIDE the component: these lookup tables don't depend on props,
-// so they don't need to be rebuilt every time a card re-renders.
-
 const TYPE_ICONS = {
   Website: <Globe className="w-3.5 h-3.5" />,
   Email: <Mail className="w-3.5 h-3.5" />,
