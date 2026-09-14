@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ScamProvider } from './context/ScamContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
-import { ThreatTicker } from './components/ThreatTicker';
+// import { ThreatTicker } from './components/ThreatTicker';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -61,7 +61,7 @@ export function App() {
           <Router>
             <ScrollToTop />
             <div className="flex flex-col min-h-screen bg-white dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-slate-950 transition-colors duration-200">
-              <ThreatTicker />
+              {/* <ThreatTicker /> */}
               <Navbar />
               <main className="flex-1">
                 <Routes>
