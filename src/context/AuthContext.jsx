@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // This is a SIMULATED auth system — there is no real backend or password
 // checking here. We just remember "who is logged in" using localStorage so
-// it survives a page refresh. Good enough for a frontend-only demo.
+// it survives a page refresh.
 
 const AuthContext = createContext();
 const STORAGE_KEY = 'scamshield_user';
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // A short-lived message shown after login/signup/logout (e.g. "Welcome back!")
+  // A short-lived message shown after login/signup/logout 
   const [authNotification, setAuthNotification] = useState(null);
 
   // Whenever currentUser changes, keep localStorage in sync.
