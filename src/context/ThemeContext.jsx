@@ -12,9 +12,6 @@ export const ThemeProvider = ({ children }) => {
     return saved === 'dark' ? 'dark' : 'light';
   });
 
-  // Whenever theme changes: (1) toggle the "dark" class on <html>, which is
-  // what makes Tailwind's `dark:` classes activate across the whole app,
-  // and (2) save the choice so it persists after a refresh.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem(THEME_KEY, theme);
