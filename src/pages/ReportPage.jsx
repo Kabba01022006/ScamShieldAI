@@ -16,11 +16,14 @@ import {
 } from 'lucide-react';
 import { useScams } from '../context/ScamContext';
 import { useAuth } from '../context/AuthContext';
+import { useSafetyStore } from '../store/useSafetyStore';
 
 export const ReportPage = () => {
   const navigate = useNavigate();
   const { addReport } = useScams();
   const { currentUser } = useAuth();
+  // Zustand action selector
+  const recordReport = useSafetyStore((state) => state.recordReport);
 
   const [formData, setFormData] = useState({
     scamType: 'Website',
@@ -111,11 +114,14 @@ export const ReportPage = () => {
       proofFileName: proofFile ? proofFile.name : null
     });
 
-    setSuccessMessage('Scam threat signature successfully published! Redirecting to database...');
+    // Record report in Zustand store (+10 points & unlocks Citizen Reporter badge)
+    recordReport();
+
+    setSuccessMessage('Scam threat signature published! (+10 Safety Points awarded) Redirecting to database...');
 
     setTimeout(() => {
       navigate('/database');
-    }, 1400);
+    }, 1500);
   };
 
   const handleAutofillTemplate = () => {

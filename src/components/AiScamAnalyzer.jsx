@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, ShieldCheck, FileWarning, RefreshCw, ArrowRight, Cpu } from 'lucide-react';
+import { useSafetyStore } from '../store/useSafetyStore';
 
 // ─── SAMPLE DATA (outside component to avoid re-creation on every render) ───
 const SAMPLES = [
@@ -70,6 +71,10 @@ export const AiScamAnalyzer = ({ onExportToReport }) => {
   const [inputText,   setInputText]   = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result,      setResult]      = useState(null);
+  const [safetyToast, setSafetyToast] = useState(false);
+
+  // Zustand selector
+  const recordScan = useSafetyStore((state) => state.recordScan);
 
   // Kick off a 600ms fake "loading" then set result
   const analyze = (text) => {
@@ -78,6 +83,11 @@ export const AiScamAnalyzer = ({ onExportToReport }) => {
     setTimeout(() => {
       setResult(runAnalysis(text));
       setIsAnalyzing(false);
+
+      // Zustand action call
+      recordScan();
+      setSafetyToast(true);
+      setTimeout(() => setSafetyToast(false), 4500);
     }, 600);
   };
 
@@ -86,7 +96,20 @@ export const AiScamAnalyzer = ({ onExportToReport }) => {
 
   // ── JSX RETURNED ────────────────────────────────────────────────────────────
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 space-y-6 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 space-y-6 shadow-sm relative">
+      
+      {/* Toast message for Zustand Safety Points */}
+      {safetyToast && (
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-2xl flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>+3 Safety Points earned! (Recorded in Zustand store)</span>
+          </div>
+          <span className="text-[10px] font-mono uppercase bg-emerald-200/60 dark:bg-emerald-800/60 px-2 py-0.5 rounded-full">
+            Score Updated
+          </span>
+        </div>
+      )}
 
       {/* 1. HEADER */}
       <div className="border-b border-slate-200 dark:border-slate-700 pb-4 space-y-1">

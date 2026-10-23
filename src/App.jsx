@@ -18,6 +18,7 @@ import { AboutPage } from './pages/AboutPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AiAnalyzerPage } from './pages/AiAnalyzerPage';
 import { ThreatMapPage } from './pages/ThreatMapPage';
+import { SafetyPage } from './pages/SafetyPage';
 
 // ScamShield AI v2.5 - Production Build Trigger
 // Scroll to top on route change
@@ -71,6 +72,7 @@ export function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/report" element={<ReportPage />} />
                   <Route path="/search" element={<SearchPage />} />
+                  <Route path="/safety" element={<SafetyPage />} />
                   <Route path="/database" element={<DatabasePage />} />
                   <Route path="/scam/:id" element={<ScamDetailPage />} />
                   <Route path="/about" element={<AboutPage />} />

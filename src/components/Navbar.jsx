@@ -18,11 +18,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSafetyStore } from '../store/useSafetyStore';
+import { SafetyScoreRing } from './SafetyScoreRing';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { currentUser, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
+  // Zustand selector for score
+  const score = useSafetyStore((state) => state.score);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -38,6 +42,7 @@ export const Navbar = () => {
     { name: 'AI Scanner', path: '/analyze', icon: Cpu, badge: 'AI' },
     { name: 'Check & Search', path: '/search', icon: Search },
     { name: 'Threat Database', path: '/database', icon: Database },
+    { name: 'Safety Score', path: '/safety', icon: ShieldCheck },
     { name: 'About & Defense', path: '/about', icon: HelpCircle },
   ];
 
@@ -100,6 +105,23 @@ export const Navbar = () => {
           {/* Right Action buttons */}
           <div className="hidden md:flex items-center gap-2.5">
             
+            {/* Compact Cyber Safety Score Ring (Zustand Store) */}
+            <Link
+              to="/safety"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all group shadow-sm"
+              title={`Cyber Safety Score: ${score}/100 (Click to view safety drill & badges)`}
+            >
+              <SafetyScoreRing score={score} size="sm" />
+              <div className="hidden lg:flex flex-col text-left leading-none pr-1">
+                <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200">
+                  Safety
+                </span>
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold font-mono">
+                  {score}/100
+                </span>
+              </div>
+            </Link>
+
             {/* Theme Toggle (Light / Dark) */}
             <button
               onClick={toggleTheme}
@@ -152,6 +174,13 @@ export const Navbar = () => {
 
           {/* Mobile hamburger menu & theme toggle */}
           <div className="flex items-center gap-2 md:hidden">
+            <Link
+              to="/safety"
+              className="p-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center"
+              title={`Cyber Safety Score: ${score}/100`}
+            >
+              <SafetyScoreRing score={score} size="sm" />
+            </Link>
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
