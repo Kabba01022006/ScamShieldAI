@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThreatMap } from '../components/ThreatMap';
-import { Compass, ShieldAlert, Radio, Flame, Crosshair, PhoneCall } from 'lucide-react';
+import { Radio, Flame, PhoneCall } from 'lucide-react';
 
 export const ThreatMapPage = () => {
   return (
@@ -61,3 +61,5 @@ export const ThreatMapPage = () => {
     </div>
   );
 };
+
+export default ThreatMapPage;

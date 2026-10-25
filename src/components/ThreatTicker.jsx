@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, ShieldAlert, Sparkles, TrendingUp, X } from 'lucide-react';
+import { ShieldAlert, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ThreatTicker = () => {
@@ -87,3 +87,5 @@ export const ThreatTicker = () => {
     </div>
   );
 };
+
+export default ThreatTicker;

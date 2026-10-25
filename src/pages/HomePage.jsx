@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShieldAlert, ShieldCheck, ArrowRight, Database, AlertTriangle } from 'lucide-react';
+import { 
+  Search, 
+  ShieldAlert, 
+  ShieldCheck, 
+  ArrowRight, 
+  AlertTriangle,
+  Award,
+  Cpu,
+  PlusCircle
+} from 'lucide-react';
 import { useScams } from '../context/ScamContext';
 import { ScamCard } from '../components/ScamCard';
 
@@ -28,6 +37,10 @@ export const HomePage = () => {
       {/* ---------- Hero Section ---------- */}
       <section className="pt-16 pb-10 text-center px-4">
         <div className="max-w-3xl mx-auto space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span>Community Cyber Defense Network for India</span>
+          </div>
           <h1 className="text-4xl sm:text-5xl font-black text-slate-950 dark:text-white leading-tight">
             Check Before You Get Scammed
           </h1>
@@ -64,17 +77,32 @@ export const HomePage = () => {
           {/* Primary actions */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
-              to="/report"
-              className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:text-slate-950 text-white font-bold text-sm transition-colors"
+              to="/check"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:text-slate-950 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98]"
             >
-              Report a Scam
+              <Search className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+              Check Before You Pay
             </Link>
             <Link
-              to="/database"
+              to="/recover"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md transition-all active:scale-[0.98]"
+            >
+              <ShieldAlert className="w-4 h-4 animate-pulse" />
+              I've Been Scammed
+            </Link>
+            <Link
+              to="/safety"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-sm border border-slate-200 dark:border-slate-700 transition-colors"
             >
-              <Database className="w-4 h-4" />
-              Search Database ({totalReports})
+              <Award className="w-4 h-4 text-amber-500" />
+              Safety Score Drill
+            </Link>
+            <Link
+              to="/report"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-sm border border-slate-200 dark:border-slate-700 transition-colors"
+            >
+              <PlusCircle className="w-4 h-4 text-slate-500" />
+              Report Threat
             </Link>
           </div>
         </div>
@@ -128,6 +156,110 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* ---------- Citizen Cyber Defense Toolkit ---------- */}
+      <section className="max-w-6xl mx-auto px-4 pt-16 space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white">
+            Citizen Cyber Defense Toolkit
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            Dedicated practical tools built to safeguard Indian digital payments and support victims during cybercrime incidents.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          {/* Card 1: Check Before You Pay */}
+          <Link
+            to="/check"
+            className="group p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:shadow-xl transition-all flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <Search className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                Check Before You Pay
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Query UPI VPAs, phone numbers, or account names before transferring money. Includes async retry handling.
+              </p>
+            </div>
+            <div className="pt-4 flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span>Verify Identifier</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 2: Emergency Recovery */}
+          <Link
+            to="/recover"
+            className="group p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 hover:shadow-xl transition-all flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+                <ShieldAlert className="w-6 h-6 animate-pulse" />
+              </div>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                I've Been Scammed
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Golden Hour checklist, 1930 helpline dialer, and automated cybercrime complaint drafter.
+              </p>
+            </div>
+            <div className="pt-4 flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400">
+              <span>Launch Recovery</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 3: Safety Score & Drill */}
+          <Link
+            to="/safety"
+            className="group p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-amber-500/50 hover:shadow-xl transition-all flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                <Award className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                Safety Score & Drill
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Interactive cyber reality drill with category-level accuracy, weak-spot recommendations, and 4-card dashboard.
+              </p>
+            </div>
+            <div className="pt-4 flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+              <span>Take Reality Drill</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 4: Heuristic Scanner */}
+          <Link
+            to="/analyze"
+            className="group p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500/50 hover:shadow-xl transition-all flex flex-col justify-between"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                Heuristic Scanner
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Scan suspicious SMS, Telegram, and WhatsApp messages using our regex-calibrated rule-based fraud detector.
+              </p>
+            </div>
+            <div className="pt-4 flex items-center gap-1 text-xs font-bold text-teal-600 dark:text-teal-400">
+              <span>Scan Suspicious Text</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+        </div>
+      </section>
+
       {/* ---------- Recent Reports ---------- */}
       <section className="max-w-6xl mx-auto px-4 pt-16 space-y-6">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -166,6 +298,4 @@ export const HomePage = () => {
   );
 };
 
-       
-      
-      
+export default HomePage;

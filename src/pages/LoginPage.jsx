@@ -1,92 +1,114 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   ShieldCheck, 
   User, 
   Mail, 
-  Lock, 
   ArrowRight, 
-  AlertCircle, 
   CheckCircle, 
-  KeyRound, 
-  ShieldAlert, 
-  Fingerprint 
+  Fingerprint,
+  Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useForm } from '../hooks/useForm';
+import { FormField } from '../components/form/FormField';
+import { TextInput } from '../components/form/TextInput';
+import { PasswordInput } from '../components/form/PasswordInput';
+import { 
+  required, 
+  email as emailValidator, 
+  minLength, 
+  matchesField, 
+  composeValidators 
+} from '../utils/validators';
 
 export const LoginPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [errors, setErrors] = useState({});
   const [submittedMessage, setSubmittedMessage] = useState(null);
 
   const { login, signup, currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+  // Return to the page user attempted to access (protected route), or default to home
+  const fromPath = location.state?.from?.pathname || '/';
 
-  const validate = () => {
-    const newErrors = {};
-    if (isSignUp && !formData.name.trim()) {
-      newErrors.name = 'Full name is required';
-    }
+  // Validation schema dynamically adjusted for Sign In vs Sign Up
+  const formValidators = isSignUp
+    ? {
+        name: required('Full name is required'),
+        email: composeValidators(
+          required('Email address is required'),
+          emailValidator('Please enter a valid email format')
+        ),
+        password: composeValidators(
+          required('Password is required'),
+          minLength(6, 'Password must be at least 6 characters')
+        ),
+        confirmPassword: composeValidators(
+          required('Please confirm your password'),
+          matchesField('password', 'Passwords do not match')
+        ),
+      }
+    : {
+        email: composeValidators(
+          required('Email address is required'),
+          emailValidator('Please enter a valid email format')
+        ),
+        password: required('Password is required'),
+      };
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email format';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (isSignUp && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
+  const handleFormSubmit = (formValues) => {
     if (isSignUp) {
       signup({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
+        name: formValues.name.trim(),
+        email: formValues.email.trim(),
+        password: formValues.password,
       });
-      setSubmittedMessage(`Sentinel account created for ${formData.name}! Redirecting...`);
+      setSubmittedMessage(`Sentinel account created for ${formValues.name}! Redirecting...`);
     } else {
       login({
-        email: formData.email.trim(),
-        password: formData.password,
+        email: formValues.email.trim(),
+        password: formValues.password,
       });
-      setSubmittedMessage('Sentinel credentials verified! Redirecting to dashboard...');
+      setSubmittedMessage('Sentinel credentials verified! Redirecting to destination...');
     }
 
     setTimeout(() => {
-      navigate('/');
+      navigate(fromPath, { replace: true });
     }, 1200);
   };
 
-  // If already authenticated
+  const {
+    values,
+    errors,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    setValues,
+    reset,
+  } = useForm({
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    validators: formValidators,
+    onSubmit: handleFormSubmit,
+  });
+
+  const handleTabSwitch = (signUpMode) => {
+    setIsSignUp(signUpMode);
+    reset({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    });
+  };
+
+  // If already authenticated, show the active sentinel session card
   if (isAuthenticated && currentUser) {
     return (
       <div className="max-w-md mx-auto px-4 py-16">
@@ -117,10 +139,10 @@ export const LoginPage = () => {
 
           <div className="flex flex-col gap-3">
             <Link
-              to="/"
+              to={fromPath !== '/login' ? fromPath : '/'}
               className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-sm transition-colors text-center shadow-md shadow-teal-600/20"
             >
-              Return to Defense Dashboard
+              Continue to {fromPath === '/' ? 'Defense Dashboard' : 'Requested Action'}
             </Link>
             <button
               onClick={logout}
@@ -160,10 +182,7 @@ export const LoginPage = () => {
         <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
           <button
             type="button"
-            onClick={() => {
-              setIsSignUp(false);
-              setErrors({});
-            }}
+            onClick={() => handleTabSwitch(false)}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
               !isSignUp
                 ? 'bg-teal-600 text-white dark:bg-teal-500 dark:text-slate-950 shadow-sm'
@@ -174,10 +193,7 @@ export const LoginPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => {
-              setIsSignUp(true);
-              setErrors({});
-            }}
+            onClick={() => handleTabSwitch(true)}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
               isSignUp
                 ? 'bg-teal-600 text-white dark:bg-teal-500 dark:text-slate-950 shadow-sm'
@@ -196,121 +212,95 @@ export const LoginPage = () => {
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Protected Route Redirect Context Banner */}
+        {location.state?.from && !submittedMessage && (
+          <div className="p-3.5 bg-amber-50 border border-amber-200 dark:bg-amber-500/15 dark:border-amber-500/30 rounded-xl flex items-center gap-2 text-amber-800 dark:text-amber-300 text-xs font-medium animate-in fade-in">
+            <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span>
+              Authentication required: Please sign in or enroll to access{' '}
+              <strong>
+                {location.state.from.pathname === '/report'
+                  ? 'Citizen Threat Reporting'
+                  : location.state.from.pathname}
+              </strong>
+              .
+            </span>
+          </div>
+        )}
+
+        {/* Form using Reusable Components and useForm Hook */}
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           
           {/* Name field (Signup only) */}
           {isSignUp && (
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-300">
-                Full Name <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <User className="w-4 h-4" />
-                </div>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Alex Morgan"
-                  className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border ${
-                    errors.name ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-                  } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 font-medium`}
-                />
-              </div>
-              {errors.name && (
-                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5 font-medium">
-                  <AlertCircle className="w-3 h-3" /> {errors.name}
-                </p>
-              )}
-            </div>
+            <FormField
+              label="Full Name"
+              name="name"
+              required
+              error={errors.name}
+            >
+              <TextInput
+                name="name"
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="e.g. Alex Morgan"
+                icon={User}
+              />
+            </FormField>
           )}
 
           {/* Email field */}
-          <div className="space-y-1">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-300">
-              Email Address <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Mail className="w-4 h-4" />
-              </div>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="sentinel@scamshield.ai"
-                className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border ${
-                  errors.email ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-                } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 font-medium`}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5 font-medium">
-                <AlertCircle className="w-3 h-3" /> {errors.email}
-              </p>
-            )}
-          </div>
+          <FormField
+            label="Email Address"
+            name="email"
+            required
+            error={errors.email}
+          >
+            <TextInput
+              type="email"
+              name="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="sentinel@scamshield.ai"
+              icon={Mail}
+            />
+          </FormField>
 
           {/* Password field */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-300">
-                Password <span className="text-rose-500">*</span>
-              </label>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <Lock className="w-4 h-4" />
-              </div>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border ${
-                  errors.password ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-                } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 font-medium`}
-              />
-            </div>
-            {errors.password && (
-              <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5 font-medium">
-                <AlertCircle className="w-3 h-3" /> {errors.password}
-              </p>
-            )}
-          </div>
+          <FormField
+            label="Password"
+            name="password"
+            required
+            error={errors.password}
+          >
+            <PasswordInput
+              name="password"
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="••••••••"
+              showStrengthMeter={isSignUp}
+            />
+          </FormField>
 
           {/* Confirm Password (Signup only) */}
           {isSignUp && (
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-300">
-                Confirm Password <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="••••••••"
-                  className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-950 border ${
-                    errors.confirmPassword ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-                  } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 font-medium`}
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-0.5 font-medium">
-                  <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+            <FormField
+              label="Confirm Password"
+              name="confirmPassword"
+              required
+              error={errors.confirmPassword}
+            >
+              <PasswordInput
+                name="confirmPassword"
+                value={values.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="••••••••"
+              />
+            </FormField>
           )}
 
           {/* Quick Fill Test Profile Button */}
@@ -318,13 +308,12 @@ export const LoginPage = () => {
             <button
               type="button"
               onClick={() => {
-                setFormData({
+                setValues({
                   name: 'Elena Vance (Threat Analyst)',
                   email: 'sentinel.alpha@scamshield.ai',
                   password: 'securitypass123',
                   confirmPassword: 'securitypass123',
                 });
-                setErrors({});
               }}
               className="text-[11px] text-slate-800 hover:text-black dark:text-slate-300 dark:hover:text-white hover:underline inline-flex items-center gap-1 font-bold"
             >
@@ -342,11 +331,11 @@ export const LoginPage = () => {
           </button>
         </form>
 
-        {/* Security Standard Badge */}
+        {/* Security Standard Note (Academic Honesty: Simulated Local Authentication) */}
         <div className="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 flex items-start gap-2.5 font-medium">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <Info className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
           <p>
-            <strong className="text-slate-900 dark:text-slate-200">Zero-Knowledge Session Protocol:</strong> Your credentials are validated locally with zero transmission of raw secrets.
+            <strong className="text-slate-900 dark:text-slate-200">Simulated Local Authentication:</strong> Session credentials are saved in browser localStorage to simulate login states without transmitting sensitive data to an external server.
           </p>
         </div>
 
@@ -354,3 +343,5 @@ export const LoginPage = () => {
     </div>
   );
 };
+
+export default LoginPage;

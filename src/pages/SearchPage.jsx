@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Search, 
   AlertTriangle, 
@@ -8,8 +8,6 @@ import {
   PlusCircle, 
   X, 
   Info, 
-  ArrowRight, 
-  CheckCircle2, 
   Radio 
 } from 'lucide-react';
 import { useScams } from '../context/ScamContext';
@@ -21,7 +19,6 @@ export const SearchPage = () => {
   const [query, setQuery] = useState(initialQuery);
   const [hasSearched, setHasSearched] = useState(false);
   const { scams } = useScams();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const q = searchParams.get('q') || '';
@@ -264,3 +261,5 @@ export const SearchPage = () => {
     </div>
   );
 };
+
+export default SearchPage;

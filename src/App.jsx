@@ -19,6 +19,11 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { AiAnalyzerPage } from './pages/AiAnalyzerPage';
 import { ThreatMapPage } from './pages/ThreatMapPage';
 import { SafetyPage } from './pages/SafetyPage';
+import { CheckPage } from './pages/CheckPage';
+import { RecoverLayout } from './pages/recover/RecoverLayout';
+import { ImmediateActionsStep } from './pages/recover/ImmediateActionsStep';
+import { ComplaintDraftStep } from './pages/recover/ComplaintDraftStep';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // ScamShield AI v2.5 - Production Build Trigger
 // Scroll to top on route change
@@ -61,7 +66,7 @@ export function App() {
         <ScamProvider>
           <Router>
             <ScrollToTop />
-            <div className="flex flex-col min-h-screen bg-white dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-slate-950 transition-colors duration-200">
+            <div className="flex flex-col min-h-screen w-full overflow-x-hidden bg-white dark:bg-[#090d16] text-slate-900 dark:text-slate-100 selection:bg-slate-900 selection:text-white dark:selection:bg-white dark:selection:text-slate-950 transition-colors duration-200">
               {/* <ThreatTicker /> */}
               <Navbar />
               <main className="flex-1">
@@ -69,8 +74,20 @@ export function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/map" element={<ThreatMapPage />} />
                   <Route path="/analyze" element={<AiAnalyzerPage />} />
+                  <Route path="/check" element={<CheckPage />} />
+                  <Route path="/recover" element={<RecoverLayout />}>
+                    <Route index element={<ImmediateActionsStep />} />
+                    <Route path="complaint" element={<ComplaintDraftStep />} />
+                  </Route>
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/report" element={<ReportPage />} />
+                  <Route
+                    path="/report"
+                    element={
+                      <ProtectedRoute>
+                        <ReportPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/safety" element={<SafetyPage />} />
                   <Route path="/database" element={<DatabasePage />} />

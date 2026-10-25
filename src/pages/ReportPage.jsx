@@ -1,44 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ShieldAlert, 
   PlusCircle, 
   UploadCloud, 
   X, 
-  AlertCircle, 
   CheckCircle2, 
   Sparkles, 
-  Calendar, 
   FileText, 
   HelpCircle, 
-  Image as ImageIcon, 
   Radio 
 } from 'lucide-react';
 import { useScams } from '../context/ScamContext';
 import { useAuth } from '../context/AuthContext';
 import { useSafetyStore } from '../store/useSafetyStore';
+import { useForm } from '../hooks/useForm';
+import { FormField } from '../components/form/FormField';
+import { TextInput } from '../components/form/TextInput';
+import { SelectInput } from '../components/form/SelectInput';
+import { TextArea } from '../components/form/TextArea';
+import { 
+  required, 
+  minLength, 
+  dateNotInFuture, 
+  composeValidators 
+} from '../utils/validators';
 
 export const ReportPage = () => {
   const navigate = useNavigate();
   const { addReport } = useScams();
   const { currentUser } = useAuth();
-  // Zustand action selector
   const recordReport = useSafetyStore((state) => state.recordReport);
-
-  const [formData, setFormData] = useState({
-    scamType: 'Website',
-    identifier: '',
-    secondaryIdentifier: '',
-    title: '',
-    description: '',
-    incidentDate: new Date().toISOString().split('T')[0],
-    threatLevel: 'High',
-  });
 
   const [proofFile, setProofFile] = useState(null);
   const [proofPreviewUrl, setProofPreviewUrl] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
 
   const scamTypes = [
@@ -50,13 +44,71 @@ export const ReportPage = () => {
     'Other'
   ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
+  const threatLevels = [
+    { value: 'Critical', label: 'Critical (Financial Drain / Account Takeover)' },
+    { value: 'High', label: 'High (Phishing Link / Credential Harvesting)' },
+    { value: 'Medium', label: 'Medium (Unsolicited Pitch / Suspicious Message)' },
+  ];
+
+  const reportValidators = {
+    scamType: required('Please select a scam type'),
+    identifier: required('The reported website, phone, or email is required'),
+    title: required('A short summary/title is required'),
+    incidentDate: composeValidators(
+      required('Date of incident is required'),
+      dateNotInFuture('Incident date cannot be in the future')
+    ),
+    description: composeValidators(
+      required('Please provide details of what happened'),
+      minLength(20, 'Please write at least 20 characters explaining the scam')
+    ),
   };
+
+  const handleFormSubmit = (formValues) => {
+    addReport({
+      scamType: formValues.scamType,
+      identifier: formValues.identifier.trim(),
+      secondaryIdentifier: formValues.secondaryIdentifier.trim(),
+      title: formValues.title.trim(),
+      description: formValues.description.trim(),
+      incidentDate: formValues.incidentDate,
+      threatLevel: formValues.threatLevel,
+      reportedBy: currentUser ? currentUser.name : 'Verified Citizen Sentinel',
+      proofImage: proofPreviewUrl || "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60",
+      proofFileName: proofFile ? proofFile.name : null
+    });
+
+    // Record report in Zustand store
+    recordReport();
+
+    setSuccessMessage('Scam threat signature published! Incident logged to database. Redirecting...');
+
+    setTimeout(() => {
+      navigate('/database');
+    }, 1500);
+  };
+
+  const {
+    values,
+    errors,
+    isSubmitting,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    setValues,
+  } = useForm({
+    initialValues: {
+      scamType: 'Website',
+      threatLevel: 'High',
+      identifier: '',
+      secondaryIdentifier: '',
+      title: '',
+      description: '',
+      incidentDate: new Date().toISOString().split('T')[0],
+    },
+    validators: reportValidators,
+    onSubmit: handleFormSubmit,
+  });
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -79,62 +131,16 @@ export const ReportPage = () => {
     }
   };
 
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.scamType) newErrors.scamType = 'Please select a scam type';
-    if (!formData.identifier.trim()) newErrors.identifier = 'The reported website, phone, or email is required';
-    if (!formData.title.trim()) newErrors.title = 'A short summary/title is required';
-    if (!formData.description.trim()) {
-      newErrors.description = 'Please provide details of what happened';
-    } else if (formData.description.trim().length < 20) {
-      newErrors.description = 'Please write at least 20 characters explaining the scam';
-    }
-    if (!formData.incidentDate) newErrors.incidentDate = 'Date of incident is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setIsSubmitting(true);
-
-    const newReport = addReport({
-      scamType: formData.scamType,
-      identifier: formData.identifier.trim(),
-      secondaryIdentifier: formData.secondaryIdentifier.trim(),
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      incidentDate: formData.incidentDate,
-      threatLevel: formData.threatLevel,
-      reportedBy: currentUser ? currentUser.name : 'Verified Citizen Sentinel',
-      proofImage: proofPreviewUrl || "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60",
-      proofFileName: proofFile ? proofFile.name : null
-    });
-
-    // Record report in Zustand store (+10 points & unlocks Citizen Reporter badge)
-    recordReport();
-
-    setSuccessMessage('Scam threat signature published! (+10 Safety Points awarded) Redirecting to database...');
-
-    setTimeout(() => {
-      navigate('/database');
-    }, 1500);
-  };
-
   const handleAutofillTemplate = () => {
-    setFormData({
+    setValues({
       scamType: 'SMS',
-      identifier: '+1 (800) 412-8833',
-      secondaryIdentifier: 'secure-bank-account-revalidation.com',
-      title: 'Urgent Debit Card Temporary Freeze Phishing Link',
-      description: 'Received a text message stating: "Alert: Your debit card ending in 4102 has been temporarily suspended due to unusual activity. Reactivate immediately at secure-bank-account-revalidation.com or visit a branch." The website replicated a major bank and prompted for card number, PIN, and CVV.',
+      identifier: '+91 98452 11094',
+      secondaryIdentifier: 'DiscomBill.apk / Urgent Cutoff',
+      title: 'Electricity Power Disconnection Imminent Threat SMS',
+      description: 'Received SMS stating: "Dear Consumer, power will be disconnected tonight at 9:30 PM due to unpaid bill. Immediately contact Power Officer or download DiscomBill.apk". APK asks for device administrator privileges and tries to steal SMS OTPs.',
       incidentDate: new Date().toISOString().split('T')[0],
       threatLevel: 'Critical',
     });
-    setErrors({});
   };
 
   return (
@@ -180,159 +186,126 @@ export const ReportPage = () => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           
           {/* Row 1: Scam Type + Threat Level */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* Scam Type */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                Attack Vector / Scam Type <span className="text-rose-500">*</span>
-              </label>
-              <select
+            <FormField
+              label="Attack Vector / Scam Type"
+              name="scamType"
+              required
+              error={errors.scamType}
+            >
+              <SelectInput
                 name="scamType"
-                value={formData.scamType}
-                onChange={handleInputChange}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 font-medium"
-              >
-                {scamTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-              {errors.scamType && (
-                <p className="text-xs text-rose-500 flex items-center gap-1 font-medium">
-                  <AlertCircle className="w-3.5 h-3.5" /> {errors.scamType}
-                </p>
-              )}
-            </div>
+                value={values.scamType}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                options={scamTypes}
+              />
+            </FormField>
 
-            {/* Threat Level */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                Calculated Threat Severity
-              </label>
-              <select
+            <FormField
+              label="Calculated Threat Severity"
+              name="threatLevel"
+            >
+              <SelectInput
                 name="threatLevel"
-                value={formData.threatLevel}
-                onChange={handleInputChange}
-                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 font-medium"
-              >
-                <option value="Critical">Critical (Financial Drain / Account Takeover)</option>
-                <option value="High">High (Phishing Link / Credential Harvesting)</option>
-                <option value="Medium">Medium (Unsolicited Pitch / Suspicious Message)</option>
-              </select>
-            </div>
-
+                value={values.threatLevel}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                options={threatLevels}
+              />
+            </FormField>
           </div>
 
-          {/* Row 2: Reported Identifier (URL / Phone / Email) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-              Primary Fraudulent Identifier (Link, Phone, or Email) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
+          {/* Row 2: Primary Fraudulent Identifier */}
+          <FormField
+            label="Primary Fraudulent Identifier (Link, Phone, or UPI ID)"
+            name="identifier"
+            required
+            hint="This exact identifier will be indexed for instant community search matches."
+            error={errors.identifier}
+          >
+            <TextInput
               name="identifier"
-              value={formData.identifier}
-              onChange={handleInputChange}
-              placeholder="e.g. +1 (800) 555-0199, usps-redelivery-portal.org, support@irs-warrant.net"
-              className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border ${
-                errors.identifier ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-              } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 font-mono`}
+              value={values.identifier}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="e.g. +91 98452-11094, sbi-kyc-verify-portal.xyz, scammer@okaxis"
+              className="font-mono"
             />
-            <p className="text-[11px] text-slate-500">
-              This exact identifier will be indexed for instant community search matches.
-            </p>
-            {errors.identifier && (
-              <p className="text-xs text-rose-500 flex items-center gap-1 font-medium">
-                <AlertCircle className="w-3.5 h-3.5" /> {errors.identifier}
-              </p>
-            )}
-          </div>
+          </FormField>
 
           {/* Optional Secondary Identifier */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-              Impersonated Brand / Secondary Contact Point (Optional)
-            </label>
-            <input
-              type="text"
+          <FormField
+            label="Impersonated Brand / Secondary Contact Point (Optional)"
+            name="secondaryIdentifier"
+            hint="e.g. Impersonating Tata Power, Skype: CBI_CyberCrime_HQ"
+          >
+            <TextInput
               name="secondaryIdentifier"
-              value={formData.secondaryIdentifier}
-              onChange={handleInputChange}
-              placeholder="e.g. Impersonating Chase Bank Fraud Dept, Telegram: @AdminEscrow"
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500"
+              value={values.secondaryIdentifier}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="e.g. DiscomBill.apk / Telegram: @TaskCoordinator"
             />
-          </div>
+          </FormField>
 
           {/* Row 3: Title & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2 space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                Incident Title / Summary Headline <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
+            <div className="sm:col-span-2">
+              <FormField
+                label="Incident Title / Summary Headline"
                 name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="e.g. Fake delivery text demanding credit card for redelivery fee"
-                className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border ${
-                  errors.title ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-                } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500`}
-              />
-              {errors.title && (
-                <p className="text-xs text-rose-500 flex items-center gap-1 font-medium">
-                  <AlertCircle className="w-3.5 h-3.5" /> {errors.title}
-                </p>
-              )}
+                required
+                error={errors.title}
+              >
+                <TextInput
+                  name="title"
+                  value={values.title}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="e.g. Fake electricity power cutoff SMS demanding APK install"
+                />
+              </FormField>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                Date Encountered <span className="text-rose-500">*</span>
-              </label>
-              <input
+            <FormField
+              label="Date Encountered"
+              name="incidentDate"
+              required
+              error={errors.incidentDate}
+            >
+              <TextInput
                 type="date"
                 name="incidentDate"
-                value={formData.incidentDate}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-teal-500"
+                value={values.incidentDate}
+                onChange={handleChange}
+                onBlur={handleBlur}
               />
-              {errors.incidentDate && (
-                <p className="text-xs text-rose-500 flex items-center gap-1 font-medium">
-                  <AlertCircle className="w-3.5 h-3.5" /> {errors.incidentDate}
-                </p>
-              )}
-            </div>
+            </FormField>
           </div>
 
           {/* Description Textarea */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-              Detailed Attack Methodology <span className="text-rose-500">*</span>
-            </label>
-            <textarea
+          <FormField
+            label="Detailed Attack Methodology"
+            name="description"
+            required
+            hint="Describe the tactics: How did they contact you? What payment or credentials were demanded? (Min 20 characters)"
+            error={errors.description}
+          >
+            <TextArea
               name="description"
               rows={4}
-              value={formData.description}
-              onChange={handleInputChange}
+              value={values.description}
+              onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Describe the tactics: How did they contact you? What payment or information was demanded? What fake threats were made?..."
-              className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border ${
-                errors.description ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800'
-              } rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 leading-relaxed font-medium`}
             />
-            {errors.description && (
-              <p className="text-xs text-rose-500 flex items-center gap-1 font-medium">
-                <AlertCircle className="w-3.5 h-3.5" /> {errors.description}
-              </p>
-            )}
-          </div>
+          </FormField>
 
-          {/* Optional File Upload for Proof / Screenshot */}
+          {/* File Upload for Proof / Screenshot */}
           <div className="space-y-2">
             <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
               Screenshot Evidence / Threat Artifacts (Optional)
@@ -423,3 +396,5 @@ export const ReportPage = () => {
     </div>
   );
 };
+
+export default ReportPage;

@@ -44,7 +44,7 @@ const PROTOCOLS = {
 const VALUES = [
   { icon: Users,    color: 'teal',   title: 'Distributed Sentinel Network', desc: 'When one person spots a scam SMS or extortion call, immediate indexing protects thousands of subsequent targets.' },
   { icon: Sparkles, color: 'cyan',   title: 'Instant Cross-Verification',   desc: 'Sub-second querying across numbers, domains, and crypto addresses helps citizens verify before transacting.' },
-  { icon: Lock,     color: 'indigo', title: 'Zero-Knowledge Defense',       desc: 'We strictly isolate personal identity from submitted threat intelligence vectors.' },
+  { icon: Lock,     color: 'indigo', title: 'Client-Side Privacy Architecture', desc: 'We strictly isolate personal identity from submitted threat intelligence vectors with client-side state.' },
 ];
 
 const FAQS = [

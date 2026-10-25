@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, ShieldAlert, Cpu, Lock, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, Cpu } from 'lucide-react';
 import { AiScamAnalyzer } from '../components/AiScamAnalyzer';
 
 export const AiAnalyzerPage = () => {
@@ -10,13 +10,13 @@ export const AiAnalyzerPage = () => {
       <div className="text-center max-w-3xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold">
           <Cpu className="w-3.5 h-3.5" />
-          <span>Zero-Knowledge Neural Classifier</span>
+          <span>Explainable Heuristic Classifier</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-          Instant AI Scam & Phishing Scanner
+          Explainable Heuristic Scam Scanner
         </h1>
         <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-          Fraudsters use engineered urgency, emotional manipulation, and fraudulent redirects. Paste suspicious SMS messages, email bodies, or chat texts to inspect threat vectors in real time.
+          Fraudsters use engineered urgency, emotional manipulation, and fraudulent redirects. Paste suspicious SMS messages, email bodies, or chat texts to inspect rule-based threat vectors in real time.
         </p>
       </div>
 
@@ -57,3 +57,5 @@ export const AiAnalyzerPage = () => {
     </div>
   );
 };
+
+export default AiAnalyzerPage;

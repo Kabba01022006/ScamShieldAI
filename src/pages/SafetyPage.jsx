@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSafetyStore } from '../store/useSafetyStore';
 import { QUIZ_QUESTIONS } from '../data/quizQuestions';
 import { SafetyScoreRing } from '../components/SafetyScoreRing';
@@ -7,57 +8,99 @@ import {
   ShieldCheck, 
   ShieldAlert, 
   RotateCcw, 
-  HelpCircle, 
   ArrowRight, 
   CheckCircle2, 
   XCircle, 
   Award,
   Zap,
-  Info
+  Info,
+  Search,
+  FileText,
+  AlertTriangle,
+  TrendingUp,
+  Activity,
+  Target
 } from 'lucide-react';
 
 export const SafetyPage = () => {
   // Zustand store fine-grained selectors
   const score = useSafetyStore((state) => state.score);
-  const badges = useSafetyStore((state) => state.badges);
-  const scanCount = useSafetyStore((state) => state.scanCount);
-  const reportCount = useSafetyStore((state) => state.reportCount);
+  const badges = useSafetyStore((state) => state.badges || []);
+  const scanCount = useSafetyStore((state) => state.scanCount || 0);
+  const reportCount = useSafetyStore((state) => state.reportCount || 0);
+  const lookupCount = useSafetyStore((state) => state.lookupCount || 0);
+  const quizStats = useSafetyStore((state) => state.quizStats || {});
   const answerQuiz = useSafetyStore((state) => state.answerQuiz);
   const resetProfile = useSafetyStore((state) => state.resetProfile);
 
   // Local state strictly for quiz UI presentation
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null); // boolean: true = user picked Scam, false = user picked Safe
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
-  const [sessionResults, setSessionResults] = useState({ correct: 0, wrong: 0, netPoints: 0 });
+  const [sessionResults, setSessionResults] = useState({ correct: 0, wrong: 0 });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Level classification label
+  // Calculate overall quiz accuracy across all attempts
+  const statsArray = Object.values(quizStats);
+  const totalAttempted = statsArray.reduce((acc, curr) => acc + (curr.attempted || 0), 0);
+  const totalCorrect = statsArray.reduce((acc, curr) => acc + (curr.correct || 0), 0);
+  const overallAccuracy = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
+
+  // Level classification label based purely on Awareness Level
   const getLevelInfo = () => {
-    if (score < 40) {
+    if (totalAttempted === 0) {
       return {
-        title: 'Beginner',
-        tagline: 'Vulnerable to advanced deception vectors. Build your defense instincts!',
+        title: 'Unrated (Drill Pending)',
+        tagline: 'Take the cyber reality drill below to evaluate your scam awareness level.',
+        badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+      };
+    }
+    if (score < 50) {
+      return {
+        title: 'Vulnerable',
+        tagline: 'High susceptibility to emotional panic triggers and spoofed alerts. Build defense instincts!',
         badgeClass: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 border-rose-300 dark:border-rose-500/30'
       };
     }
-    if (score <= 70) {
+    if (score <= 75) {
       return {
         title: 'Alert Citizen',
-        tagline: 'Healthy skepticism and active fraud awareness. Keep training!',
+        tagline: 'Healthy skepticism and active fraud awareness. Review your weak spots to reach Guardian level.',
         badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border-amber-300 dark:border-amber-500/30'
       };
     }
     return {
       title: 'Cyber Guardian',
-      tagline: 'Outstanding cyber vigilance! You proactively protect yourself and the community.',
+      tagline: 'Outstanding cyber vigilance! You accurately identify deceptive vectors and protect the community.',
       badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30'
     };
   };
 
   const levelInfo = getLevelInfo();
   const currentQuestion = QUIZ_QUESTIONS[currentIndex];
+
+  // Map each quiz question to search keyword for weak spots
+  const categoryKeywords = {
+    'digital-arrest': 'digital arrest',
+    'electricity-cutoff': 'electricity',
+    'olx-reverse-qr': 'QR',
+    'fake-kyc-link': 'KYC',
+    'genuine-bank-alert': 'Bank',
+  };
+
+  // Identify weak spots (attempted scenarios with accuracy < 70%, or unpracticed)
+  const weakSpots = QUIZ_QUESTIONS.map((q) => {
+    const stat = quizStats[q.id] || { correct: 0, attempted: 0 };
+    const acc = stat.attempted > 0 ? Math.round((stat.correct / stat.attempted) * 100) : null;
+    return {
+      ...q,
+      attempted: stat.attempted,
+      correct: stat.correct,
+      accuracy: acc,
+      searchKeyword: categoryKeywords[q.id] || 'scam',
+    };
+  }).filter((item) => item.accuracy !== null && item.accuracy < 70);
 
   // Handle user's guess (Scam or Safe)
   const handleAnswer = (userGuessedScam) => {
@@ -74,7 +117,6 @@ export const SafetyPage = () => {
     setSessionResults((prev) => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       wrong: prev.wrong + (!isCorrect ? 1 : 0),
-      netPoints: prev.netPoints + (isCorrect ? 5 : -2)
     }));
   };
 
@@ -95,7 +137,7 @@ export const SafetyPage = () => {
     setSelectedAnswer(null);
     setShowExplanation(false);
     setQuizFinished(false);
-    setSessionResults({ correct: 0, wrong: 0, netPoints: 0 });
+    setSessionResults({ correct: 0, wrong: 0 });
   };
 
   // Profile reset
@@ -106,7 +148,7 @@ export const SafetyPage = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 space-y-10">
+    <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 space-y-10">
       
       {/* Page Title & Mission */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
@@ -116,10 +158,10 @@ export const SafetyPage = () => {
             <span>Cyber Defense Readiness Index</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-950 dark:text-white tracking-tight">
-            Cyber Safety Score
+            Cyber Defense Dashboard & Safety Score
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl font-medium">
-            Test your ability to spot real-world Indian cyber scams, earn defense badges, and track your cyber awareness score powered by Zustand state management.
+            Track your verified Scam Awareness Level, review tactical weak spots, and practice realistic cyber threat scenarios.
           </p>
         </div>
 
@@ -127,7 +169,7 @@ export const SafetyPage = () => {
         <div>
           {showResetConfirm ? (
             <div className="flex items-center gap-2 p-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl text-xs">
-              <span className="text-rose-700 dark:text-rose-300 font-semibold">Reset all progress?</span>
+              <span className="text-rose-700 dark:text-rose-300 font-semibold">Reset all metrics?</span>
               <button
                 onClick={handleConfirmReset}
                 className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors"
@@ -145,16 +187,93 @@ export const SafetyPage = () => {
             <button
               onClick={() => setShowResetConfirm(true)}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors"
-              title="Reset score back to 20 and clear badges"
+              title="Reset awareness level, history, and badges"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset my profile</span>
+              <span>Reset Profile Metrics</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* TOP SECTION: Safety Score Card, Stats, and Badges */}
+      {/* ── MINI DASHBOARD: 4 STAT CARDS ─────────────────────────────────── */}
+      <section aria-label="Mini Dashboard" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Card 1: Awareness Level */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider">Awareness Level</span>
+            <Target className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-slate-950 dark:text-white">
+              {score}%
+            </span>
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              {levelInfo.title}
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Computed purely from scenario drill accuracy
+          </p>
+        </div>
+
+        {/* Card 2: Overall Quiz Accuracy */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider">Quiz Accuracy</span>
+            <TrendingUp className="w-4 h-4 text-teal-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-slate-950 dark:text-white">
+              {overallAccuracy}%
+            </span>
+            <span className="text-xs font-mono font-bold text-slate-500">
+              ({totalCorrect}/{totalAttempted})
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Correctly classified Indian scam lures
+          </p>
+        </div>
+
+        {/* Card 3: Lookups Executed */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider">Lookups Executed</span>
+            <Search className="w-4 h-4 text-cyan-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-slate-950 dark:text-white">
+              {lookupCount}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">queries</span>
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Identifiers verified on Check Before You Pay
+          </p>
+        </div>
+
+        {/* Card 4: Reports Submitted */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider">Reports Logged</span>
+            <FileText className="w-4 h-4 text-amber-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-slate-950 dark:text-white">
+              {reportCount}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">threats</span>
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Contributed to the public threat registry
+          </p>
+        </div>
+
+      </section>
+
+      {/* TOP SECTION: Safety Score Card and Badges */}
       <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-8">
         
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -165,14 +284,14 @@ export const SafetyPage = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-center sm:justify-start gap-2">
                 <span className="text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
-                  Current Threat Level
+                  Awareness Readiness
                 </span>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border ${levelInfo.badgeClass}`}>
                   {levelInfo.title}
                 </span>
               </div>
               <h2 className="text-2xl font-black text-slate-900 dark:text-white">
-                {score} / 100 Safety Points
+                {score}% Awareness Level
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md font-medium leading-relaxed">
                 {levelInfo.tagline}
@@ -180,40 +299,143 @@ export const SafetyPage = () => {
             </div>
           </div>
 
-          {/* Right: Activity Stats Strip */}
-          <div className="w-full md:w-auto grid grid-cols-3 gap-3">
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-center">
-              <span className="block text-xl font-black font-mono text-slate-900 dark:text-white">
-                {scanCount}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                AI Scans
-              </span>
+          {/* Right: Quick summary pills */}
+          <div className="w-full md:w-auto p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 text-xs space-y-2 max-w-xs">
+            <div className="flex justify-between font-bold">
+              <span className="text-slate-500">Drill Scenarios:</span>
+              <span className="font-mono text-slate-900 dark:text-white">{totalAttempted} answered</span>
             </div>
-
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-center">
-              <span className="block text-xl font-black font-mono text-slate-900 dark:text-white">
-                {reportCount}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                Reports
-              </span>
+            <div className="flex justify-between font-bold">
+              <span className="text-slate-500">AI Neural Scans:</span>
+              <span className="font-mono text-slate-900 dark:text-white">{scanCount} completed</span>
             </div>
-
-            <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-center">
-              <span className="block text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
-                {badges.length}
-              </span>
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                Badges
-              </span>
+            <div className="flex justify-between font-bold">
+              <span className="text-slate-500">Defense Badges:</span>
+              <span className="font-mono text-emerald-600 dark:text-emerald-400">{badges.length} of 5</span>
             </div>
           </div>
         </div>
 
-        {/* Badges Carousel / Grid */}
+        {/* Badges List */}
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
           <BadgeList unlockedBadgeIds={badges} />
+        </div>
+
+      </section>
+
+      {/* ── CATEGORY ACCURACY BREAKDOWN & WEAK SPOTS ─────────────────────── */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Category Accuracy Bars */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+          <div className="space-y-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 className="text-lg font-black text-slate-950 dark:text-white flex items-center gap-2">
+              <Activity className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              Per-Category Accuracy
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Your historical classification accuracy broken down by cyber threat vector.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {QUIZ_QUESTIONS.map((q) => {
+              const stat = quizStats[q.id] || { correct: 0, attempted: 0 };
+              const acc = stat.attempted > 0 ? Math.round((stat.correct / stat.attempted) * 100) : null;
+              
+              const barColor = acc === null
+                ? 'bg-slate-200 dark:bg-slate-700'
+                : acc >= 80
+                ? 'bg-emerald-500'
+                : acc >= 50
+                ? 'bg-amber-500'
+                : 'bg-rose-500';
+
+              return (
+                <div key={q.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-800 dark:text-slate-200 truncate pr-2">
+                      {q.category}
+                    </span>
+                    <span className="font-mono text-slate-600 dark:text-slate-400 shrink-0">
+                      {acc !== null ? `${acc}% (${stat.correct}/${stat.attempted})` : 'Pending Drill'}
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${barColor} transition-all duration-500 rounded-full`}
+                      style={{ width: `${acc !== null ? acc : 0}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Your Weak Spots Section */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+          <div className="space-y-1 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 className="text-lg font-black text-slate-950 dark:text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              Your Weak Spots & Recommended Studies
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Scam categories with sub-optimal accuracy (&lt;70%) and recommended registry threats.
+            </p>
+          </div>
+
+          {weakSpots.length > 0 ? (
+            <div className="space-y-3">
+              {weakSpots.map((spot) => (
+                <div
+                  key={spot.id}
+                  className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-amber-900 dark:text-amber-200">
+                      {spot.category}
+                    </h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
+                      Accuracy: {spot.accuracy}%
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                    {spot.redFlags[0]}
+                  </p>
+                  <div className="pt-1">
+                    <Link
+                      to={`/search?q=${encodeURIComponent(spot.searchKeyword)}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                    >
+                      <span>Inspect matching threat records in database</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : totalAttempted > 0 ? (
+            <div className="p-8 text-center space-y-3 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
+              <h4 className="text-sm font-extrabold text-emerald-900 dark:text-emerald-200">
+                No Critical Weak Spots Detected!
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                All practiced scam categories maintain strong accuracy (&ge; 70%). Continue taking reality drills periodically to maintain your defense reflexes.
+              </p>
+            </div>
+          ) : (
+            <div className="p-8 text-center space-y-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-2xl">
+              <Info className="w-8 h-8 text-slate-400 mx-auto" />
+              <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                Weak Spot Analysis Pending
+              </h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                Take the interactive drill below to identify which scam vectors trick you most frequently.
+              </p>
+            </div>
+          )}
         </div>
 
       </section>
@@ -289,7 +511,7 @@ export const SafetyPage = () => {
                 }`}
               >
                 <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-                <span>🚨 It's a Scam (+5 / -2)</span>
+                <span>🚨 It's a Scam</span>
               </button>
 
               <button
@@ -307,7 +529,7 @@ export const SafetyPage = () => {
                 }`}
               >
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span>✅ It's Safe (+5 / -2)</span>
+                <span>✅ It's Safe</span>
               </button>
             </div>
 
@@ -320,14 +542,14 @@ export const SafetyPage = () => {
                       <>
                         <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                         <span className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">
-                          Accurate Assessment! (+5 Safety Points)
+                          Accurate Assessment!
                         </span>
                       </>
                     ) : (
                       <>
                         <XCircle className="w-5 h-5 text-rose-600" />
                         <span className="font-extrabold text-sm text-rose-700 dark:text-rose-400">
-                          Threat Evaluation Missed (-2 Safety Points)
+                          Threat Evaluation Missed
                         </span>
                       </>
                     )}
@@ -376,10 +598,7 @@ export const SafetyPage = () => {
                 Drill Completed!
               </h4>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                You correctly evaluated {sessionResults.correct} out of {QUIZ_QUESTIONS.length} scenarios.
-                Net safety change: <strong className={sessionResults.netPoints >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                  {sessionResults.netPoints >= 0 ? `+${sessionResults.netPoints}` : sessionResults.netPoints} Points
-                </strong>.
+                You correctly evaluated {sessionResults.correct} out of {QUIZ_QUESTIONS.length} scenarios. Your updated Awareness Level is now <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{score}%</strong>.
               </p>
             </div>
 
@@ -390,7 +609,7 @@ export const SafetyPage = () => {
                 className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold text-sm shadow-md transition-all flex items-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Play Again</span>
+                <span>Practice Again</span>
               </button>
             </div>
           </div>

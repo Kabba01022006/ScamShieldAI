@@ -25,15 +25,31 @@ const COLOR = {
   emerald: { wrap: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800', text: 'text-emerald-800 dark:text-emerald-300' },
 };
 
+/**
+ * Evaluates whether a keyword or phrase matches the input text.
+ * - Multi-word phrases use case-insensitive substring matching.
+ * - Single words use word-boundary regex (\bword\b) to prevent false positives
+ *   inside ordinary words (e.g. 'pin' in 'shopping', 'pan' in 'company', 'ed' in 'received').
+ */
+function matchesWordOrPhrase(text, term) {
+  const cleanTerm = term.trim().toLowerCase();
+  if (cleanTerm.includes(' ')) {
+    return text.toLowerCase().includes(cleanTerm);
+  }
+  const escaped = cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+  return regex.test(text);
+}
+
 // ─── PURE ANALYSIS FUNCTION (no side effects) ─────────────────────────────────
 function runAnalysis(text) {
   const lower = text.toLowerCase();
   let score = 15;
   const tactics = [], indicators = [];
 
-  // Check each rule
+  // Check each rule using word-boundary matching
   RULES.forEach(({ words, label, detail, pts }) => {
-    const found = words.filter(w => lower.includes(w));
+    const found = words.filter((w) => matchesWordOrPhrase(text, w));
     if (found.length) {
       score += pts;
       tactics.push(label);
@@ -98,15 +114,15 @@ export const AiScamAnalyzer = ({ onExportToReport }) => {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 space-y-6 shadow-sm relative">
       
-      {/* Toast message for Zustand Safety Points */}
+      {/* Toast message for Activity Logging */}
       {safetyToast && (
         <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 rounded-2xl flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>+3 Safety Points earned! (Recorded in Zustand store)</span>
+            <span>Threat analysis complete! Scan recorded in safety activity.</span>
           </div>
           <span className="text-[10px] font-mono uppercase bg-emerald-200/60 dark:bg-emerald-800/60 px-2 py-0.5 rounded-full">
-            Score Updated
+            Activity Logged
           </span>
         </div>
       )}
@@ -115,11 +131,11 @@ export const AiScamAnalyzer = ({ onExportToReport }) => {
       <div className="border-b border-slate-200 dark:border-slate-700 pb-4 space-y-1">
         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-md w-fit">
           <Cpu className="w-3.5 h-3.5 text-emerald-600" />
-          Heuristic Threat Engine
+          Explainable Heuristic Analyzer
         </div>
-        <h3 className="text-2xl font-black text-slate-900 dark:text-white">AI Scam Analyzer</h3>
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white">Explainable Heuristic Scam Analyzer</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Paste any suspicious SMS, WhatsApp, or email to detect fraud patterns.
+          Rule-based linguistic marker analysis (explainable heuristics, not black-box machine learning).
         </p>
       </div>
 

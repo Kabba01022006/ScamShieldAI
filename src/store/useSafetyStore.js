@@ -1,16 +1,18 @@
 /**
  * ============================================================================
- * STATE ARCHITECTURE: ZUSTAND STORE - CYBER SAFETY PROFILE
+ * STATE ARCHITECTURE: ZUSTAND STORE - CYBER SAFETY PROFILE & APP STATE
  * ============================================================================
  * Why Zustand for this feature?
- * - High-frequency, cross-cutting state: Safety score, badges, and counters
- *   update from multiple actions across different pages (AI Analyzer, Report Form,
- *   Interactive Quiz) and must reflect instantly in the Navbar score ring.
- * - Fine-grained selector subscriptions: Components subscribe only to the slices
- *   they need (e.g. `useSafetyStore(s => s.score)`), avoiding unnecessary re-renders.
- * - Why ThemeContext & AuthContext remain Context:
- *   Theme and Auth are low-frequency, coarse-grained app configuration and session
- *   state that rarely change and do not need selector optimization or dedicated stores.
+ * - Cross-cutting state: Scam awareness level, badges, recent checks, recovery progress,
+ *   and activity counters are accessed and modified across multiple pages
+ *   (Check Before You Pay, Recovery Mode, Quiz, Report Form) and reflected in Navbar.
+ * - Selective Subscriptions: Components subscribe only to the slices they need
+ *   (e.g. `useSafetyStore(s => s.score)` or `useSafetyStore(s => s.recovery)`),
+ *   eliminating wasteful re-renders.
+ * - Out-of-the-box Persistence: Synchronizes seamlessly with browser localStorage
+ *   via the `persist` middleware.
+ * - Meaningful Metrics: Scam Awareness Level is computed directly from quiz accuracy
+ *   per scam scenario, rather than arbitrary points for clicks or scans.
  * ============================================================================
  */
 import { create } from 'zustand';
@@ -21,45 +23,63 @@ export const BADGES = [
   {
     id: 'phish-spotter',
     name: 'Phish Spotter',
-    description: 'Identified 3 cyber threat quiz questions correctly.',
+    description: 'Accurately classified 3 cyber threat scenarios in the drill.',
     requirement: 'Answer 3 quiz questions correctly',
     icon: '🎯'
   },
   {
     id: 'sharp-eye',
     name: 'Sharp Eye',
-    description: 'Maintained a flawless streak of 5 correct quiz answers in a row.',
+    description: 'Maintained a flawless streak of 5 correct threat assessments in a row.',
     requirement: 'Answer 5 quiz questions correctly in a row',
     icon: '👁️'
   },
   {
-    id: 'first-scan',
-    name: 'First Scan',
-    description: 'Scanned your first suspicious message with AI Neural Engine.',
-    requirement: 'Run 1 AI heuristic scam analysis',
-    icon: '⚡'
+    id: 'registry-scout',
+    name: 'Registry Scout',
+    description: 'Verified a suspicious phone number or UPI handle on Check Before You Pay.',
+    requirement: 'Perform 1 scam registry lookup',
+    icon: '🔍'
   },
   {
     id: 'citizen-reporter',
     name: 'Citizen Reporter',
-    description: 'Contributed a verified scam report to the National Registry.',
+    description: 'Contributed a verified scam report to the National Threat Registry.',
     requirement: 'Submit 1 cyber fraud incident report',
     icon: '🛡️'
   },
   {
-    id: 'shield-master',
-    name: 'Shield Master',
-    description: 'Attained a Cyber Safety Score of 80+ points.',
-    requirement: 'Reach an overall safety score of 80 or above',
-    icon: '👑'
+    id: 'recovery-responder',
+    name: 'Recovery Responder',
+    description: 'Completed all 6 critical Golden Hour emergency recovery actions.',
+    requirement: 'Complete the emergency recovery checklist',
+    icon: '⚡'
   }
 ];
 
-// Helper to evaluate and unlock badges dynamically
-const evaluateBadges = (currentBadges, score, quizHistory, scanCount, reportCount) => {
-  const unlocked = new Set(currentBadges);
+// Helper to calculate Scam Awareness Level (0-100%) purely from quiz category accuracy
+export const calculateAwarenessLevel = (quizStats) => {
+  const entries = Object.values(quizStats || {});
+  if (entries.length === 0) return 0;
 
-  // 1. Phish Spotter: 3 total correct answers
+  const totalAttempted = entries.reduce((acc, curr) => acc + (curr.attempted || 0), 0);
+  const totalCorrect = entries.reduce((acc, curr) => acc + (curr.correct || 0), 0);
+
+  if (totalAttempted === 0) return 0;
+  return Math.round((totalCorrect / totalAttempted) * 100);
+};
+
+// Helper to evaluate and unlock badges dynamically based on real achievements
+const evaluateBadges = (
+  currentBadges,
+  quizHistory,
+  lookupCount,
+  reportCount,
+  recoverySteps = []
+) => {
+  const unlocked = new Set(currentBadges || []);
+
+  // 1. Phish Spotter: 3 or more total correct answers
   const correctCount = quizHistory.filter((q) => q.correct).length;
   if (correctCount >= 3) {
     unlocked.add('phish-spotter');
@@ -83,9 +103,9 @@ const evaluateBadges = (currentBadges, score, quizHistory, scanCount, reportCoun
     unlocked.add('sharp-eye');
   }
 
-  // 3. First Scan: 1 or more scans
-  if (scanCount >= 1) {
-    unlocked.add('first-scan');
+  // 3. Registry Scout: 1 or more registry lookups performed
+  if (lookupCount >= 1) {
+    unlocked.add('registry-scout');
   }
 
   // 4. Citizen Reporter: 1 or more reports submitted
@@ -93,109 +113,193 @@ const evaluateBadges = (currentBadges, score, quizHistory, scanCount, reportCoun
     unlocked.add('citizen-reporter');
   }
 
-  // 5. Shield Master: score >= 80
-  if (score >= 80) {
-    unlocked.add('shield-master');
+  // 5. Recovery Responder: all 6 checklist steps completed
+  if (recoverySteps && recoverySteps.length >= 6) {
+    unlocked.add('recovery-responder');
   }
 
   return Array.from(unlocked);
 };
 
-// Clamp helper to ensure score stays within [0, 100]
-const clampScore = (value) => Math.max(0, Math.min(100, value));
-
 export const useSafetyStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       // State
-      score: 20,
+      score: 0, // Scam Awareness Level (0-100) derived from quiz accuracy
       badges: [],
       quizHistory: [],
-      scanCount: 0,
-      reportCount: 0,
+      quizStats: {}, // { [questionId]: { correct: number, attempted: number } }
+      scanCount: 0, // Plain activity stat
+      reportCount: 0, // Plain activity stat
+      lookupCount: 0, // Plain activity stat
+      recentChecks: [], // Last 5 queries (persisted)
+      recovery: {
+        startedAt: null,
+        completedSteps: [],
+      },
 
       // Actions
       answerQuiz: (questionId, correct) => {
         set((state) => {
-          const delta = correct ? 5 : -2;
-          const nextScore = clampScore(state.score + delta);
+          const prevStat = state.quizStats[questionId] || { correct: 0, attempted: 0 };
+          const nextQuizStats = {
+            ...state.quizStats,
+            [questionId]: {
+              correct: prevStat.correct + (correct ? 1 : 0),
+              attempted: prevStat.attempted + 1,
+            },
+          };
+
           const nextHistory = [
             ...state.quizHistory,
-            { questionId, correct, timestamp: Date.now() }
+            { questionId, correct, timestamp: Date.now() },
           ];
+
+          const nextScore = calculateAwarenessLevel(nextQuizStats);
+
           const nextBadges = evaluateBadges(
             state.badges,
-            nextScore,
             nextHistory,
-            state.scanCount,
-            state.reportCount
+            state.lookupCount,
+            state.reportCount,
+            state.recovery?.completedSteps || []
           );
 
           return {
             score: nextScore,
+            quizStats: nextQuizStats,
             quizHistory: nextHistory,
-            badges: nextBadges
+            badges: nextBadges,
           };
         });
       },
 
       recordScan: () => {
-        set((state) => {
-          // Only the first 10 scans award points (+3 points each)
-          const awardsPoints = state.scanCount < 10;
-          const nextScore = awardsPoints
-            ? clampScore(state.score + 3)
-            : state.score;
-          const nextScanCount = state.scanCount + 1;
-          const nextBadges = evaluateBadges(
-            state.badges,
-            nextScore,
-            state.quizHistory,
-            nextScanCount,
-            state.reportCount
-          );
-
-          return {
-            score: nextScore,
-            scanCount: nextScanCount,
-            badges: nextBadges
-          };
-        });
+        set((state) => ({
+          scanCount: state.scanCount + 1,
+        }));
       },
 
       recordReport: () => {
         set((state) => {
-          const nextScore = clampScore(state.score + 10);
           const nextReportCount = state.reportCount + 1;
           const nextBadges = evaluateBadges(
             state.badges,
-            nextScore,
             state.quizHistory,
-            state.scanCount,
-            nextReportCount
+            state.lookupCount,
+            nextReportCount,
+            state.recovery?.completedSteps || []
           );
 
           return {
-            score: nextScore,
             reportCount: nextReportCount,
-            badges: nextBadges
+            badges: nextBadges,
           };
+        });
+      },
+
+      addRecentCheck: (query) => {
+        if (!query || !query.trim()) return;
+        const cleanQuery = query.trim();
+
+        set((state) => {
+          // Keep last 5 unique queries (most recent first)
+          const filtered = (state.recentChecks || []).filter(
+            (q) => q.toLowerCase() !== cleanQuery.toLowerCase()
+          );
+          const nextChecks = [cleanQuery, ...filtered].slice(0, 5);
+          const nextLookupCount = (state.lookupCount || 0) + 1;
+
+          const nextBadges = evaluateBadges(
+            state.badges,
+            state.quizHistory,
+            nextLookupCount,
+            state.reportCount,
+            state.recovery?.completedSteps || []
+          );
+
+          return {
+            recentChecks: nextChecks,
+            lookupCount: nextLookupCount,
+            badges: nextBadges,
+          };
+        });
+      },
+
+      clearRecentChecks: () => {
+        set({ recentChecks: [] });
+      },
+
+      // Recovery mode actions
+      startRecovery: () => {
+        set((state) => {
+          if (state.recovery?.startedAt) return state;
+          return {
+            recovery: {
+              startedAt: Date.now(),
+              completedSteps: state.recovery?.completedSteps || [],
+            },
+          };
+        });
+      },
+
+      toggleRecoveryStep: (stepId) => {
+        set((state) => {
+          const currentSteps = state.recovery?.completedSteps || [];
+          const isCompleted = currentSteps.includes(stepId);
+          const nextSteps = isCompleted
+            ? currentSteps.filter((id) => id !== stepId)
+            : [...currentSteps, stepId];
+
+          const startedAt = state.recovery?.startedAt || Date.now();
+
+          const nextBadges = evaluateBadges(
+            state.badges,
+            state.quizHistory,
+            state.lookupCount,
+            state.reportCount,
+            nextSteps
+          );
+
+          return {
+            recovery: {
+              startedAt,
+              completedSteps: nextSteps,
+            },
+            badges: nextBadges,
+          };
+        });
+      },
+
+      resetRecovery: () => {
+        set({
+          recovery: {
+            startedAt: null,
+            completedSteps: [],
+          },
         });
       },
 
       resetProfile: () => {
         set({
-          score: 20,
+          score: 0,
           badges: [],
           quizHistory: [],
+          quizStats: {},
           scanCount: 0,
-          reportCount: 0
+          reportCount: 0,
+          lookupCount: 0,
+          recentChecks: [],
+          recovery: {
+            startedAt: null,
+            completedSteps: [],
+          },
         });
-      }
+      },
     }),
     {
       name: 'scamshield-safety',
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
